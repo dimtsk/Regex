@@ -1,5 +1,8 @@
 package com.dimtsk;
 
+import java.util.ArrayList;
+
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,56 +31,74 @@ public class Main {
     public static String getStringPattern(String s) {
         String result = "";
         int length = s.split(" ").length;
+        List<Pattern> patternsList = getPattern();
+//        List<Matcher> match = getmatchPattern1(patternsList, s);
 
-        Pattern pattern1 = Pattern.compile("^(?<Team>\\w+) \\((?<Gender>\\w)\\) (?<Level>B|C|Amateur) (?<AgeGroup>U\\d+|Adult)$");
-        Pattern pattern2 = Pattern.compile("^(?<Team>\\w+) (?<Level>B|C|Amateur) (?<AgeGroup>U\\d+|Adult)$$");
-        Pattern pattern21 = Pattern.compile("^(?<Team>\\w+) \\((?<Gender>\\w)\\) (?<Level>B|C|Amateur)$");
-        Pattern pattern22 = Pattern.compile("^(?<Team>\\w+) \\((?<Gender>\\w)\\) (?<AgeGroup>U\\d+|Adult)$");
-        Pattern pattern3 = Pattern.compile("^(?<Team>\\w+) \\((?<Gender>\\w)\\)$");
-        Pattern pattern31 = Pattern.compile("^(?<Team>\\w+) (?<Level>B|C|Amateur)$");
-        Pattern pattern32 = Pattern.compile("^(?<Team>\\w+) (?<AgeGroup>U\\d+|Adult)$");
-        Pattern pattern4 = Pattern.compile("^(?<Team>\\w+)$");
-
-        Matcher matcher1 = pattern1.matcher(s);
-        Matcher matcher2 = pattern2.matcher(s);
-        Matcher matcher21 = pattern21.matcher(s);
-        Matcher matcher22 = pattern22.matcher(s);
-        Matcher matcher3 = pattern3.matcher(s);
-        Matcher matcher31 = pattern31.matcher(s);
-        Matcher matcher32 = pattern32.matcher(s);
-        Matcher matcher4 = pattern4.matcher(s);
-
-        if (matcher1.find()) {
-            return String.format("%s (%s) %s %s", matcher1.group("Team"), matcher1.group("Gender"), matcher1.group("Level"), matcher1.group("AgeGroup"));
-        }
-        if (length == 3) {
-            if (matcher2.find()) {
-                return String.format("%s %s %s", matcher2.group("Team"), matcher2.group("Level"), matcher2.group("AgeGroup"));
-            } else if (matcher21.find()) {
-                return String.format("%s (%s) %s", matcher21.group("Team"), matcher21.group("Gender"), matcher21.group("Level"));
-            } else if (matcher22.find()) {
-                return String.format("%s (%s) %s", matcher22.group("Team"), matcher22.group("Gender"), matcher22.group("AgeGroup"));
-            } else {
-                System.out.println("Match not found");
+        for (Pattern pattern : patternsList) {
+            Matcher matcher = pattern.matcher(s);
+            if (matcher.find() && length == 4) {
+                return String.format("%s (%s) %s %s", matcher.group("Team"), matcher.group("Gender"), matcher.group("Level"), matcher.group("AgeGroup"));
             }
-        }
-
-        if (length == 2) {
-            if (matcher3.find()) {
-                return String.format("%s (%s)", matcher3.group("Team"), matcher3.group("Gender"));
-            } else if (matcher31.find()) {
-                return String.format("%s %s", matcher31.group("Team"), matcher31.group("Level"));
-            } else if (matcher32.find()) {
-                return String.format("%s %s", matcher32.group("Team"), matcher32.group("AgeGroup"));
-            } else {
-                System.out.println("Match not found");
+            if (length == 3) {
+                if (matcher.find()) {
+                    return String.format("%s %s %s", matcher.group("Team"), matcher.group("Level"), matcher.group("AgeGroup"));
+                } else if (matcher.find()) {
+                    return String.format("%s (%s) %s", matcher.group("Team"), matcher.group("Gender"), matcher.group("Level"));
+                } else if (matcher.find()) {
+                    return String.format("%s (%s) %s", matcher.group("Team"), matcher.group("Gender"), matcher.group("AgeGroup"));
+                }
             }
-        }
 
-        if (matcher4.find()) {
-            return String.format("%s", matcher4.group("Team"));
+            if (length == 2) {
+                if (matcher.find()) {
+                    return String.format("%s (%s)", matcher.group("Team"), matcher.group("Gender"));
+                } else if (matcher.find()) {
+                    return String.format("%s %s", matcher.group("Team"), matcher.group("Level"));
+                } else if (matcher.find()) {
+                    return String.format("%s %s", matcher.group("Team"), matcher.group("AgeGroup"));
+                }
+            }
+
+            if (matcher.find() && length == 1) {
+                return String.format("%s", matcher.group("Team"));
+            }
         }
         return result;
+    }
 
+    public static List<Pattern> getPattern() {
+        List<Pattern> p = List.of(
+                Pattern.compile("^(?<Team>\\w+) \\((?<Gender>\\w)\\) (?<Level>B|C|Amateur) (?<AgeGroup>U\\d+|Adult)$"),
+                Pattern.compile("^(?<Team>\\w+) (?<Level>B|C|Amateur) (?<AgeGroup>U\\d+|Adult)$"),
+                Pattern.compile("^(?<Team>\\w+) \\((?<Gender>\\w)\\) (?<Level>B|C|Amateur)$"),
+                Pattern.compile("^(?<Team>\\w+) \\((?<Gender>\\w)\\) (?<AgeGroup>U\\d+|Adult)$"),
+                Pattern.compile("^(?<Team>\\w+) \\((?<Gender>\\w)\\)$"),
+                Pattern.compile("^(?<Team>\\w+) (?<Level>B|C|Amateur)$"),
+                Pattern.compile("^(?<Team>\\w+) (?<AgeGroup>U\\d+|Adult)$"),
+                Pattern.compile("^(?<Team>\\w+)$")
+        );
+        return p;
+    }
+
+    public static Pattern matchPattern(List<Pattern> p, String s) {
+        Matcher m;
+        Pattern ptr = null;
+
+        for (Pattern pattern : p) {
+            m = pattern.matcher(s);
+            if (m.find()) {
+                return pattern;
+            }
+        }
+        return ptr;
+    }
+
+    public static List<Matcher> getmatchPattern1(List<Pattern> p, String s) {
+        List<Matcher> matcher = new ArrayList<>();
+        for (int i = 0; i < p.size(); i++) {
+            Matcher m = p.get(i).matcher(s);
+            matcher.add(m);
+        }
+        return matcher;
     }
 }
